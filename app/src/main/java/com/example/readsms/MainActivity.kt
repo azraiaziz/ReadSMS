@@ -10,10 +10,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.cursoradapter.widget.CursorAdapter
 import com.example.readsms.databinding.ActivityMainBinding
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import com.google.android.material.snackbar.Snackbar
 
 //for best practice use recycler view
 //
@@ -29,6 +34,35 @@ class MainActivity : ListActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val permissionCheck = ContextCompat.checkSelfPermission(this,
+            Manifest.permission.READ_SMS)
+        if(permissionCheck == PackageManager.PERMISSION_GRANTED){
+
+        }else{
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.READ_SMS),
+                PERMISSION_REQUEST_READ_SMS)
+        }
+    }
+
+        override fun onRequestPermissionsResult(
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
+        ) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+            when(requestCode){
+                PERMISSION_REQUEST_READ_SMS -> {
+                    if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                        readSMS()
+                    }else{
+                        Snackbar.make(binding.root, "Permission not granted", Snackbar.LENGTH_LONG).show()
+                    }
+                }
+            }
+
+
         readSMS()
     }
     //column di dalam table sms yang akan diakses melalui content provider
@@ -58,6 +92,7 @@ class MainActivity : ListActivity() {
         }
             }
 
+    //function yang dipanggil selepas user beri permission pada app untuk baca SMS
     private fun readSMS(){
         //Baca database dari content provider
         //retrieve the SMS DB, Specify the required column and sort order
